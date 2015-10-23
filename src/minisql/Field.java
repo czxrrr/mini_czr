@@ -3,6 +3,7 @@ package minisql;
 import java.util.ArrayList;
 
 public class Field {
+	//你们只需要 使用带  getXXX ，其他的是我自己用的，你们不用管
 	private String type;
 	private int len=0;
 	private boolean unique=false;
