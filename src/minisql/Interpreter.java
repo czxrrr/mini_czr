@@ -128,26 +128,67 @@ public class Interpreter {
     	}
     	return SQL;
     }
+   
     
+    
+    //===================delete================
     public static String delete_clause(ArrayList<String> in){
     	String SQL=new String();
     	if(in.size()==4){
     		if(in.get(3).equals(";")){
-    			System.out.println("delete");
-    			return "delete done";
+    			System.out.println("Delete success");
+    			return "00";
     		}else{
-    			System.out.println("error");
+    			System.out.println("Delete error: ");
     			SQL="99";
     			return SQL;
     		}
-    	}else if(in.size()<=4){
-			System.out.println("error");
+    	}else if(in.size()<4){
+			System.out.println("Delete error:incomplete delete sentence");
 			SQL="99";
 			return SQL;
     	}else if (in.get(3).equals("where")){
-    		
+    		int bracket=0;
+    		int i=4;
+    		ArrayList<Conditions> cons=new ArrayList<Conditions>();
+    		while(i<in.size()){
+    			if(in.get(i).equals("(")){
+    				bracket++;	
+    			}
+    			else if(in.get(i).equals(")")){
+    				bracket++;
+    				if(bracket<0){
+    					System.out.println("Delete error: ( and ) are not right;"); 
+        				return "99";
+    				}
+    			}
+    			else{
+    				if(i+2<in.size()){
+    					if(!KeyWord.isKeyword(in.get(i)) && !KeyWord.isKeyword(in.get(i+2)) && KeyWord.isOp(in.get(i)) ){
+    						cons.add(new Conditions(in.get(i),in.get(i+1),in.get(i+2)));
+    					}else if(i+4<in.size()){
+    						if(!KeyWord.isKeyword(in.get(i)) && !KeyWord.isKeyword(in.get(i+3)) && KeyWord.isOp(in.get(i))&& in.get(i+2).equals("\'") && in.get(i+4).equals("\'") ){
+        						cons.add(new Conditions(in.get(i),in.get(i+1),in.get(i+3)));
+        					}else{
+        						System.out.println("Delete error: one or more conditions are not complete;"); 
+            					return "99";
+        					}
+    					}else{
+    						System.out.println("Delete error: one or more conditions are not complete;"); 
+        					return "99";
+    					}
+    				}else{
+    					System.out.println("Delete error: one or more conditions are not complete;"); 
+    					return "99";
+    				}
+    			}    		
+    		i++;
+    		}
+    		if(bracket<0){
+    			System.out.println("Delete error: ( and ) are not right;"); 
+				return "99";
+    		}
     	}
-    
     	return "99";
     }
     
@@ -193,6 +234,8 @@ public class Interpreter {
 		}
 		else if(words.get(0).equals("delete") && words.get(1).equals("from")){
 			SQL=delete_clause(words);
+		}else if(words.get(0).equals("delete")) {
+			System.out.println("Delete error: from was missing");
 		}
 //		else if(words.get(0).equals("execfile")){
 //			SQL=create_clause(words,1);

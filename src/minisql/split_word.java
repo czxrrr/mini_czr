@@ -18,7 +18,7 @@ public class split_word {
 		int i=0;
 		int len=in.length();
 		while(i<len){
-			if(in.charAt(i)==';'||in.charAt(i)=='('||in.charAt(i)==')'||in.charAt(i)==','){
+			if(in.charAt(i)==';'||in.charAt(i)=='('||in.charAt(i)==')'||in.charAt(i)==','||in.charAt(i)=='\''){
 				in=in.substring(0,i)+" "+in.substring(i,i+1)+" "+in.substring(i+1,len);
 				len=len+2;
 				i++;
