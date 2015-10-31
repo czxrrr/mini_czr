@@ -89,4 +89,14 @@ public class Field {
 		}
 		return "99";
 	}
+
+	public Field(String type,int len,String name,boolean unique){
+		this.type = type;
+		this.len = len;
+		this.name = name;
+		this.unique = unique;
+	}
+	public Field(){
+
+	}
 }

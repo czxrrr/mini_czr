@@ -15,7 +15,7 @@ public class CatalogManager {
 
     }
 
-    public Response createTable(String tableName, ArrayList<Field> fields, int primaryKeyPosition) throws IOException {
+    public static Response createTable(String tableName, ArrayList<Field> fields, int primaryKeyPosition) throws IOException {
         if (isTableExist(tableName)) {
             return new Response(false, "table has existed!");
         }
@@ -24,14 +24,11 @@ public class CatalogManager {
 
         String newTable = tableName;
         for (Field field : fields) {
-            /*
-            cataloginfo 格式:
-            tablename,fieldname/type/length/unique,......,0/k(primary key)
-             */
+            //表的信息的格式：tablename,fieldname/type/length/unique,......,fieldname/type/length/unique,k(k is primary key)
             String newField = field.getName() + "/" + field.getType() + "/" + field.getLen() + "/" + (field.getUnique() ? "1" : "0");
             newTable = newTable + "," + newField;
         }
-        newTable = newTable + "0/" + primaryKeyPosition;
+        newTable = newTable + "," + primaryKeyPosition;
 
         bufferedReader.write(newTable + "\n");
 
@@ -41,16 +38,17 @@ public class CatalogManager {
 
     }
 
-    public boolean isTableExist(String tableName) throws IOException {
+    public static boolean isTableExist(String tableName) throws IOException {
         File file = new File("CatalogInfo");
         if (!file.exists())
             file.createNewFile();
 
         BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
-        String temp, items[];
-        while ((temp = bufferedReader.readLine()) != null) {
-            items = temp.split(",");
-            if (items[0].equals(tableName)) {
+        String line, tbname;
+        while ((line = bufferedReader.readLine()) != null) {
+            //表的信息的格式：tablename,fieldname/type/length/unique,......,fieldname/type/length/unique,k(k is primary key)
+            tbname = line.split(",")[0];
+            if (tbname.equals(tableName)) {
                 bufferedReader.close();
                 return true;
             }
@@ -59,7 +57,7 @@ public class CatalogManager {
         return false;
     }
 
-    public Response dropTable(String tableName) throws IOException {
+    public static Response dropTable(String tableName) throws IOException {
         if (!isTableExist(tableName)) {
             return new Response(false, "table not exists!");
         }
@@ -71,9 +69,10 @@ public class CatalogManager {
 
         String line;
         while ((line = bufferedReader.readLine()) != null) {
+            //tablename,fieldname/type/length/unique,......,fieldname/type/length/unique,k(k is primary key)
             String tbName = line.split(",")[0];
             if (tbName.equals(tableName)) {
-                continue;
+                continue;   //消去一行table记录
             }
             bufferedWriter.write(line);
             bufferedWriter.newLine();
@@ -87,11 +86,39 @@ public class CatalogManager {
         return new Response(true);
     }
 
-    public Response createIndex(String tableName, String fieldName, String indexName) throws IOException {
-        if (isIndexExist(tableName, fieldName)) {
+    public static boolean isFieldExist(String tableName,String fieldName) throws IOException {
+        File file = new File("CatalogInfo");
+        if (!file.exists())
+            file.createNewFile();
+
+        BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
+        String temp, items[];
+        while ((temp = bufferedReader.readLine()) != null) {
+            //表的信息的格式：tablename,fieldname/type/length/unique,......,fieldname/type/length/unique,k(k is primary key)
+            items = temp.split(",");
+            if (items[0].equals(tableName)) {
+
+                for (int i = 1; i < items.length-1; i = i+1) {
+                    String fieldInfo[] = items[i].split("/");
+                    if (fieldInfo[2].equals(fieldName)){
+                        bufferedReader.close();
+                        return true;
+                    }
+                }
+            }
+        }
+        bufferedReader.close();
+        return false;
+    }
+
+    public static Response createIndex(String tableName, String fieldName, String indexName) throws IOException {
+        if (isIndexExist(tableName, fieldName)|isIndexExist(indexName)) {
             return new Response(false, "Index has existed!");
         }
 
+        if (isFieldExist(tableName,fieldName)){
+            return new Response(false,"Field doesn't exist!");
+        }
 
         File indexInfo = new File("CatalogIndexInfo");
         BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(indexInfo, true));
@@ -102,15 +129,16 @@ public class CatalogManager {
         return new Response(true);
     }
 
-    public boolean isIndexExist(String tableName, String fieldName) throws IOException {
-        File indexInfo = new File("CatalogIndexInfo");
-        if (!indexInfo.exists())
-            indexInfo.createNewFile();
-        BufferedReader bufferedReader = new BufferedReader(new FileReader(indexInfo));
+    public static boolean isIndexExist(String tableName, String fieldName) throws IOException {
+        File indexFile = new File("CatalogIndexInfo");
+        if (!indexFile.exists())
+            indexFile.createNewFile();
+        BufferedReader bufferedReader = new BufferedReader(new FileReader(indexFile));
         String line;
         while ((line = bufferedReader.readLine()) != null) {
-            String items[] = line.split(",");
-            if (items[0].equals(tableName) && items[1].equals(fieldName)) {
+            //表的信息的格式：tablename,fieldname,indexname
+            String indexInfo[] = line.split(",");
+            if (indexInfo[0].equals(tableName) && indexInfo[1].equals(fieldName)) {
                 bufferedReader.close();
                 return true;
             }
@@ -119,15 +147,16 @@ public class CatalogManager {
         return false;
     }
 
-    public boolean isIndexExist(String indexName) throws IOException {
-        File indexInfo = new File("CatalogIndexInfo");
-        if (!indexInfo.exists())
-            indexInfo.createNewFile();
-        BufferedReader bufferedReader = new BufferedReader(new FileReader(indexInfo));
+    public static boolean isIndexExist(String indexName) throws IOException {
+        File indexFile = new File("CatalogIndexInfo");
+        if (!indexFile.exists())
+            indexFile.createNewFile();
+        BufferedReader bufferedReader = new BufferedReader(new FileReader(indexFile));
         String line;
         while ((line = bufferedReader.readLine()) != null) {
-            String items[] = line.split(",");
-            if (items[2].equals(indexName)) {
+            //表的信息的格式：tablename,fieldname,indexname
+            String indexInfo[] = line.split(",");
+            if (indexInfo[2].equals(indexName)) {
                 bufferedReader.close();
                 return true;
             }
@@ -136,7 +165,7 @@ public class CatalogManager {
         return false;
     }
 
-    public Response dropIndex(String indexName) throws IOException {
+    public static Response dropIndex(String indexName) throws IOException {
         if (!isTableExist(indexName)) {
             return new Response(false, "index not exists!");
         }
@@ -148,9 +177,10 @@ public class CatalogManager {
 
         String line;
         while ((line = bufferedReader.readLine()) != null) {
+            //表的信息的格式：tablename,fieldname,indexname
             String indexName2 = line.split(",")[2];
             if (indexName2.equals(indexName)) {
-                continue;
+                continue;   //消去一行index记录
             }
             bufferedWriter.write(line);
             bufferedWriter.newLine();
@@ -164,7 +194,7 @@ public class CatalogManager {
         return new Response(true);
     }
 
-    public ArrayList<Field> readTableFields(String tableName) throws IOException {
+    public static ArrayList<Field> readTableFields(String tableName) throws IOException {
         if (!isTableExist(tableName)) {
             return null;
         }
@@ -174,18 +204,20 @@ public class CatalogManager {
         ArrayList<Field> fields = new ArrayList<>();
         String line;
         while ((line = bufferedReader.readLine()) != null) {
+            //表的信息的格式：tablename,fieldname/type/length/unique,......,fieldname/type/length/unique,k(k is primary key)
             String tbName = line.split(",")[0];
             if (tbName.equals(tableName)) {
                 String tableInfo[] = line.split(",");
-                for (int i = 1; i < tableInfo.length; ) {
+                for (int i = 1; i < tableInfo.length-1; i++) {
+                    //每个field的格式：fieldname/type/length/unique
+                    String fieldInfo[] = tableInfo[i].split("/");
+
                     Field field = new Field();
-                    field.setName(tableInfo[i]);
-                    field.setType(tableInfo[i + 1]);
-                    //fieldname/type/length/unique
-                    field.setLen(Integer.parseInt(tableInfo[i + 2]));
-                    field.setUnique((tableInfo[i + 3].equals("1")));
+                    field.setName(fieldInfo[0]);
+                    field.setType(fieldInfo[1]);
+                    field.setLen(Integer.parseInt(fieldInfo[2]));
+                    field.setUnique((fieldInfo[3].equals("1")));
                     fields.add(field);
-                    i = i + 4;
                 }
 
             }
@@ -196,5 +228,22 @@ public class CatalogManager {
         return fields;
     }
 
+    public static void main(String args[]) throws IOException {
+        Field field = new Field("char",8,"name",false);
+        ArrayList<Field> fields = new ArrayList<>();
+        fields.add(field);
 
+        CatalogManager.createTable("hello",fields,0);
+        if (CatalogManager.isTableExist("hello")){
+            System.out.print(true);
+        };
+
+        CatalogManager.isIndexExist("myindex");
+        CatalogManager.createIndex("hello","name","myindex");
+        CatalogManager.isIndexExist("myindex");
+    }
 }
+
+
+
+
