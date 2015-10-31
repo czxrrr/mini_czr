@@ -9,6 +9,7 @@ public class Interpreter {
 	}
 	
     
+	
     public static String create_clause(ArrayList<String> in )
     {
     	String SQL;
