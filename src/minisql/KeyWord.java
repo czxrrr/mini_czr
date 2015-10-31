@@ -41,7 +41,9 @@ public class KeyWord {
 		//keys.add("delete");
 		return (keys.indexOf(a)>=0);
 	}
-	public static void main(){
-		
+	public static void main(String[] args){
+		System.out.println(isOp("="));
+		System.out.println(isKeyword("="));
+		System.out.println("\'");
 	}
 }

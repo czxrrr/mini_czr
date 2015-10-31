@@ -17,6 +17,17 @@ public class split_word {
 		ArrayList<String> out = new ArrayList<String>();
 		int i=0;
 		int len=in.length();
+		boolean in_string=false;
+		for(i=0;i<len;i++){
+			if(in.charAt(i)=='\''){
+				in_string=!in_string;
+			}
+			if(in.charAt(i)==' ' && in_string){
+				//把 ‘’ 内的字符串中的空格 替换成@，以免被后面给切分了
+				in=in.substring(0,i)+"@"+in.substring(i+1,len);
+			}
+		}
+		i=0;
 		while(i<len){
 			if(in.charAt(i)==';'||in.charAt(i)=='('||in.charAt(i)==')'||in.charAt(i)==','||in.charAt(i)=='\''){
 				in=in.substring(0,i)+" "+in.substring(i,i+1)+" "+in.substring(i+1,len);
