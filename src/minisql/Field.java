@@ -34,17 +34,15 @@ public class Field {
 	public int getLen(){
 		return this.len;
 	}
-	public String setAll(ArrayList<String> words){
+	public Response setAll(ArrayList<String> words){
 		int i;
-		if(words.size()<=2){
-			System.out.println("not enough words ");
-			return "99";
+		if(words.size()<2){
+			return new Response(false,"no field name or type");
 		}
-		if(!words.get(1).equals("char") && !words.get(1).equals("int") && !words.get(1).equals("float")){
-			System.out.println("please specify the type of all fields (only int char float are supported)");
-			return "99";
+		else if(!words.get(1).equals("char") && !words.get(1).equals("int") && !words.get(1).equals("float")){
+			return new Response(false,"please specify the type of all fields (only int char float are supported)");
 		}
-		if(words.size()<=6){
+		else if(words.size()<=6){
 			if( words.get(1).equals("char") && words.get(2).equals("(") && words.get(4).equals(")") ){
 				setType("char");
 				setLen(Integer.parseInt(words.get(3)));
@@ -54,11 +52,10 @@ public class Field {
 						this.unique=true;
 					}
 					else{
-						System.out.println("I cannot know your meaning, do you mean unique");
-						return "99";
+						return new Response(false,"I cannot know your meaning, do you mean unique");
 					}
 				}
-				return "99";
+				return new Response(false,"I cannot know your meaning, do you mean unique");
 			}
 			if(words.get(1).equals("int")){
 				setType("int");
@@ -68,8 +65,7 @@ public class Field {
 						this.unique=true;
 					}
 					else{
-						System.out.println("I cannot know your meaning, do you mean unique");
-						return "99";
+						return new Response(false,"I cannot know your meaning, do you mean unique");
 					}
 				}
 			}
@@ -81,13 +77,24 @@ public class Field {
 						this.unique=true;
 					}
 					else{
-						System.out.println("I cannot know your meaning, do you mean unique");
-						return "99";
+						return new Response(false,"I cannot know your meaning, do you mean unique");
 					}
 				}
 			}
+		}else{
+			return new Response(false,"too many words, I know understand what you mean in the field "+words.get(0));
 		}
-		return "99";
+		return new Response(false,"some thing wrong has happened in the field"+words.get(0));
+	}
+
+	public Field(String type,int len,String name,boolean unique){
+		this.type = type;
+		this.len = len;
+		this.name = name;
+		this.unique = unique;
+	}
+	public Field(){
+
 	}
 
 	public Field(String type,int len,String name,boolean unique){
