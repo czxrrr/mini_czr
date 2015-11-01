@@ -184,7 +184,7 @@ public class CatalogManager {
     }
 
     public static Response dropIndex(String indexName) throws IOException {
-        if (!isTableExist(indexName)) {
+        if (!isIndexExist(indexName)) {
             return new Response(false, "index not exists!");
         }
         File catalogFile = new File("CatalogIndexInfo");
