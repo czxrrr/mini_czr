@@ -34,7 +34,7 @@ public class CatalogManager {
 
         bufferedReader.close();
 
-        return new Response(true);
+        return new Response(true,"success");
 
     }
 
@@ -117,7 +117,7 @@ public class CatalogManager {
         }
 
         if (!isFieldExist(tableName,fieldName)){
-            return new Response(false,"Field doesn't exist!");
+            return new Response(false,"Field or table doesn't exist!");
         }
 
         if (!isFieldUnique(tableName,fieldName)){
@@ -130,7 +130,7 @@ public class CatalogManager {
         bufferedWriter.write(tableName + "," + fieldName + "," + indexName);
         bufferedWriter.newLine();
         bufferedWriter.close();
-        return new Response(true);
+        return new Response(true,"success");
     }
 
     private static boolean isFieldUnique(String tableName,String fieldName) throws IOException {
@@ -174,6 +174,7 @@ public class CatalogManager {
         while ((line = bufferedReader.readLine()) != null) {
             //表的信息的格式：tablename,fieldname,indexname
             String indexInfo[] = line.split(",");
+            //System.out.print(indexInfo[2]);
             if (indexInfo[2].equals(indexName)) {
                 bufferedReader.close();
                 return true;
@@ -184,7 +185,7 @@ public class CatalogManager {
     }
 
     public static Response dropIndex(String indexName) throws IOException {
-        if (!isTableExist(indexName)) {
+        if (!isIndexExist(indexName)) {
             return new Response(false, "index not exists!");
         }
         File catalogFile = new File("CatalogIndexInfo");

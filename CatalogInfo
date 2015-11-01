@@ -1,3 +1,6 @@
-x2xx,age/int/0/0,ad/int/0/0,-1
+x2xx,age/int/0/1,ad/int/0/0,-1
 xcvsd,as/char/6/0,sss/float/0/0,sd/int/0/0,-1
 xcvs2d,as/char/6/0,sss/float/0/0,sd/int/0/0,-1
+a,null/null/0/0,-1
+asd2,age/int/0/0,-1
+people,id/int/0/1,-1

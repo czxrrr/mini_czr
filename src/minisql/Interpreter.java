@@ -15,7 +15,7 @@ public class Interpreter {
     public static Response create_clause(ArrayList<String> in ) throws IOException
     {
     	if(in.size()<4){
-    		return new Response(false,"illegal create sentences");
+    		return new Response(false,"please say what you want to create");
     	}
     	else if(in.get(1).equals("table")){
     		//System.out.println("in table");
@@ -25,17 +25,22 @@ public class Interpreter {
     			return new Response(false,"missing ( or )");
     		}
     		int start=4;
+    		if(in.size()<6){
+    			return new Response(false,"no table name or no field name");
+    		}
     		ArrayList<Field> fields = new ArrayList<Field>();
     		ArrayList<String> fieldString=new ArrayList<String>();
     		String primary=null;
     		for(i=4;i<=len-2;i++){
     			if(in.get(i).equals(",")){
-    	    		Field t=new Field();
-    				t.setAll(fieldString);
+					Field t=new Field();
+    				if(t.setAll(fieldString).isSuccess()==false){
+    					return new Response(false,"fields was not specified correctly");
+    				}
     				fieldString.clear();
     				fields.add(t);
     			}else if((in.get(i).equals(")")&& in.get(i+1).equals(";") )){
-    				if(fieldString.get(0).equals("primary")){
+    				if(fieldString.size()>=2 && fieldString.get(0).equals("primary")){
     					if(fieldString.get(1).equals("key")){
     						if(in.indexOf(fieldString.get(2))!=i-1){
     							primary=fieldString.get(2);
@@ -45,10 +50,15 @@ public class Interpreter {
     					}
     				}
     				else{
-    					Field t=new Field();
-        				t.setAll(fieldString);
-        				fieldString.clear();
-        				fields.add(t);
+    					if(fieldString.size()>0){
+    						Field t=new Field();
+            				if(t.setAll(fieldString).isSuccess()==false){
+            					return new Response(false,"fields was not specified correctly");
+            				}
+            				fieldString.clear();
+            				fields.add(t);
+    					}
+    					
     				}
     			}
     			else{
@@ -93,11 +103,11 @@ public class Interpreter {
         			}
         		}
         		else{
-        			return new Response(false, "missing ( or )");
+        			return new Response(false, "missing ( or ) or fields name");
         		}
         	}
         	else{
-        		return new Response(false, "no keyword on was found");
+        		return new Response(false, "no keyword \"on\" was found");
         	}
     	}
     }
@@ -345,7 +355,7 @@ public class Interpreter {
 				in = in + " " + scan.nextLine();
 			}
 			ArrayList<String> words = split_word.my_split(in);
-			System.out.println(input_classify(words).getInfo());
+			System.out.println(">>"+input_classify(words).getInfo());
 			in = scan.nextLine();
 		}
 	}
@@ -398,7 +408,7 @@ public class Interpreter {
 	public static Response quit_clause(ArrayList<String> in )
 	{
 		if(in.get(1).equals(";")){
-			System.out.println("bye bye");
+			System.out.println(">>bye bye");
 			System.exit(0);
 			return new Response(false, "if you want exit,please input quit;  Do not add any other words");
 		}

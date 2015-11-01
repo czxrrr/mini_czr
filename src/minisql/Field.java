@@ -48,38 +48,43 @@ public class Field {
 				setLen(Integer.parseInt(words.get(3)));
 				setName(words.get(0));
 				if(words.size()==6){
-					if(words.get(5).equals(unique)){
+					if(words.get(5).equals("unique")){
 						this.unique=true;
+						return new Response(true);
 					}
 					else{
 						return new Response(false,"I cannot know your meaning, do you mean unique");
 					}
 				}
-				return new Response(false,"I cannot know your meaning, do you mean unique");
+				return new Response(true);
 			}
 			if(words.get(1).equals("int")){
 				setType("int");
 				setName(words.get(0));
 				if(words.size()==3){
-					if(words.get(2).equals(unique)){
+					if(words.get(2).equals("unique")){
 						this.unique=true;
+						return new Response(true);
 					}
 					else{
 						return new Response(false,"I cannot know your meaning, do you mean unique");
 					}
 				}
+				return new Response(true);
 			}
 			if(words.get(1).equals("float")){
 				setType("float");
 				setName(words.get(0));
 				if(words.size()==3){
-					if(words.get(2).equals(unique)){
+					if(words.get(2).equals("unique")){
 						this.unique=true;
+						return new Response(true);
 					}
 					else{
 						return new Response(false,"I cannot know your meaning, do you mean unique");
 					}
 				}
+				return new Response(true);
 			}
 		}else{
 			return new Response(false,"too many words, I know understand what you mean in the field "+words.get(0));
@@ -97,13 +102,5 @@ public class Field {
 
 	}
 
-	public Field(String type,int len,String name,boolean unique){
-		this.type = type;
-		this.len = len;
-		this.name = name;
-		this.unique = unique;
-	}
-	public Field(){
 
-	}
 }

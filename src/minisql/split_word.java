@@ -29,7 +29,14 @@ public class split_word {
 		}
 		i=0;
 		while(i<len){
-			if(in.charAt(i)==';'||in.charAt(i)=='('||in.charAt(i)==')'||in.charAt(i)==','||in.charAt(i)=='\''){
+			if(i<len-1 &&(in.substring(i,i+2).equals("<>")||in.substring(i,i+2).equals("<=")||in.substring(i,i+2).equals(">="))){
+				in=in.substring(0,i)+" "+in.substring(i,i+2)+" "+in.substring(i+2,len);
+				len=len+2;
+				i++;
+				i++;
+				
+			}else if(in.charAt(i)==';'||in.charAt(i)=='('||in.charAt(i)==')'||in.charAt(i)==','||in.charAt(i)=='\''||in.charAt(i)=='*'
+					||in.charAt(i)=='='||in.charAt(i)=='<'||in.charAt(i)=='>'){
 				in=in.substring(0,i)+" "+in.substring(i,i+1)+" "+in.substring(i+1,len);
 				len=len+2;
 				i++;
@@ -38,7 +45,7 @@ public class split_word {
 		}
 		for (String temp:in.split("\\s+")){
 			out.add(temp);
-			System.out.println(temp);
+			//System.out.println(temp);
 			if(temp.equals(";")){
 				break;
 			}
