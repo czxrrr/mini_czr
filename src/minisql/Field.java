@@ -97,13 +97,4 @@ public class Field {
 
 	}
 
-	public Field(String type,int len,String name,boolean unique){
-		this.type = type;
-		this.len = len;
-		this.name = name;
-		this.unique = unique;
-	}
-	public Field(){
-
-	}
 }
