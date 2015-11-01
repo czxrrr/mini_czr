@@ -1,37 +1,28 @@
 package minisql;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
+
 public class Interpreter {
+	//=========ok================
 	public static void show_help(){
 		System.out.println("help");
 	}
 	
-    
-    public static String create_clause(ArrayList<String> in )
+   
+    public static Response create_clause(ArrayList<String> in ) throws IOException
     {
-    	String SQL;
     	if(in.size()<4){
-    		SQL="99";
-    		System.out.println("illegal create sentences");
-    		return SQL;
+    		return new Response(false,"illegal create sentences");
     	}
-    	if(in.get(1).equals("database")&&in.get(3).equals(";")){
-    		SQL=new String("00");
-    		SQL = SQL+in.get(2);
-    		System.out.println("create database"+in.get(2));
-    	}
-    	//create table a( name char(8) unique, age integer );
     	else if(in.get(1).equals("table")){
-    		System.out.println("in table");
-    		SQL=new String("01");
-    		SQL = SQL+in.get(2);	
+    		//System.out.println("in table");
     		int len=in.size();
     		int i;
     		if(!in.get(3).equals("(") || !in.get(len-2).equals(")")){
-    			System.out.println("missing ( or )");
-    			return "99";
+    			return new Response(false,"missing ( or )");
     		}
     		int start=4;
     		ArrayList<Field> fields = new ArrayList<Field>();
@@ -40,9 +31,9 @@ public class Interpreter {
     		for(i=4;i<=len-2;i++){
     			if(in.get(i).equals(",")){
     	    		Field t=new Field();
-    				//t.setAll(fieldString);
+    				t.setAll(fieldString);
     				fieldString.clear();
-    				//fields.add(t);
+    				fields.add(t);
     			}else if((in.get(i).equals(")")&& in.get(i+1).equals(";") )){
     				if(fieldString.get(0).equals("primary")){
     					if(fieldString.get(1).equals("key")){
@@ -50,61 +41,75 @@ public class Interpreter {
     							primary=fieldString.get(2);
     						}
     					}else{
-    						return "99";
+    						return new Response(false,"primary was found, but no 'key' in the sentence");
     					}
+    				}
+    				else{
+    					Field t=new Field();
+        				t.setAll(fieldString);
+        				fieldString.clear();
+        				fields.add(t);
     				}
     			}
     			else{
     				fieldString.add(in.get(i));
     			}	
     		}
-    		System.out.println(in.get(2)+fields+primary);
+    		int primary_position=-1;
+    		if(primary==null){
+    			primary_position=-1;
+    		}
+    		else{
+    			int j;
+    			for(j=0;j<fields.size();j++){
+    				if(fields.get(j).getName().equals(primary)){
+    					primary_position=j;
+    				}
+    			}
+    		}
+    		return CatalogManager.createTable(in.get(2),fields,primary_position);
     	}
     	else if(in.get(1).equals("index")){
-    		SQL=new String("11");
-    		SQL = SQL+in.get(2);
-    		create_index_on(in);
-       		//System.out.println("create index"+in.get(2));
+    		return create_index_on(in);
+       		
     	}
     	else{
-    		SQL=new String("99");
-    		System.out.println("if you want help,please input help;  Do not add any other words");
+    		return new Response(false,"please say what you want to create");
     	}
-    	return SQL;
     }
     
-    public static String create_index_on(ArrayList<String> in ){
+    // done
+    // create index XXX on table_name(field_name);
+    public static Response create_index_on(ArrayList<String> in ) throws IOException{
     	if(in.size()<9){
-    		System.out.println("not enough parameters");
+    		return new Response(false, "not enough parameters");
     	}else{
     		if(in.get(3).equals("on")){
         		if(in.get(5).equals("(")&&in.get(7).equals(")")){
-        			System.out.println("create index"+in.get(4)+"-on-"+in.get(6));
+        			if(!KeyWord.isKeyword(in.get(2),in.get(4),in.get(6))){
+        				return CatalogManager.createIndex(in.get(4), in.get(6), in.get(2));
+        			}else{
+        				return new Response(false, "the name of index or table or field should not be keyword");
+        			}
         		}
         		else{
-        			System.out.println("missing ( or )");
+        			return new Response(false, "missing ( or )");
         		}
         	}
         	else{
-        		System.out.println("no keyword on was found");
+        		return new Response(false, "no keyword on was found");
         	}
     	}
-    	
-    	return "99";
     }
     
-    public static String insert_clause(ArrayList<String> in )
+    public static Response insert_clause(ArrayList<String> in )
     {
     	
     	String SQL=new String();
     	if(in.size()<6){
-    		SQL="99";
-    		System.out.println("illegal insert sentences");
-    		return SQL;
+    		return new Response(false,"illegal insert sentences");
     	}
-    	if(in.get(1).equals("into")&&in.get(3).equals("values")&& in.get(4).equals("(")){
-    		SQL=new String ("");
-    		SQL = SQL+in.get(2);
+    	else if(in.get(1).equals("into")&&in.get(3).equals("values")&& in.get(4).equals("(")){
     		int i;
     		ArrayList<String> values=new ArrayList<String>();
     		for(i=5;i<in.size()-1;i++){
@@ -117,217 +122,218 @@ public class Interpreter {
     						System.out.println("insert "+in.get(2)+" "+values);
     					}
     					else{
-    						SQL="99";
-    						return SQL;
+    						return new Response(false,"no ) or ; was found");
     					}
     				}
     			}else{
     				values.add(in.get(i));
     			}
     		}
+    		return new Response(false,"22");
+    	}else{
+    		return new Response(false,"illegal insert sentence");
     	}
-    	return SQL;
     }
    
     
-    
-    //===================delete================
-    public static String delete_clause(ArrayList<String> in){
-    	String SQL=new String();
-    	if(in.size()==4){
-    		if(in.get(3).equals(";")){
-    			System.out.println("Delete success");
-    			return "00";
-    		}else{
-    			System.out.println("Delete error: unknown error");
-    			SQL="99";
-    			return SQL;
-    		}
-    	}else if(in.size()<4){
-			System.out.println("Delete error:incomplete delete sentence");
-			SQL="99";
-			return SQL;
-    	}else if (in.get(3).equals("where")){
-    		int bracket=0;
-    		int i=4;
-    		ArrayList<Conditions> cons=new ArrayList<Conditions>();
-    		while(i<in.size()){
-    			if(in.get(i).equals(";")){
-    				break;
-    			}
-    			if(in.get(i).equals("and")){
-    				i++;
-    				continue;
-    			}
-    			if(in.get(i).equals("(")){
-    				bracket++;	
-    			}
-    			else if(in.get(i).equals(")")){
-    				bracket++;
-    				if(bracket<0){
-    					System.out.println("Delete error: ( and ) are not right;"); 
-        				return "99";
-    				}
-    			}
-    			else{
-    				//System.out.println(in.size()+i);
-    				if(i+2<in.size()){
-    					if(!KeyWord.isKeyword(in.get(i)) && !KeyWord.isKeyword(in.get(i+2)) && KeyWord.isOp(in.get(i+1)) ){
-    						cons.add(new Conditions(in.get(i),in.get(i+1),in.get(i+2)));
-    						System.out.println("chenggong");
-    						i=i+3;
-    						if(in.get(i).equals("and")){
-    							i++;
-    							continue;
-    						}else if(in.get(i).equals(";")){
-    							break;
-    						}
-    						
-    					}else if(i+4<in.size()){
-    						System.out.println(!KeyWord.isKeyword(in.get(i)));
-    						System.out.println(!KeyWord.isKeyword(in.get(i+3) ));
-    						System.out.println(KeyWord.isOp(in.get(i+1)));
-    						System.out.println(!in.get(i+2).equals("\'"));
-    						if(!KeyWord.isKeyword(in.get(i)) && !KeyWord.isKeyword(in.get(i+3)) && KeyWord.isOp(in.get(i+1))&& in.get(i+2).equals("\'") && in.get(i+4).equals("\'") ){
-        						cons.add(new Conditions(in.get(i),in.get(i+1),in.get(i+3)));
-        						System.out.println("chenggong");
-        						i=i+5;
-        						if(in.get(i).equals("and")){
-        							i++;
-        							continue;
-        						}else if(in.get(i).equals(";")){
-        							break;
-        						}
-        					}else{
-        						System.out.println("1Delete error: one or more conditions are not complete;"); 
-            					return "99";
-        					}
-    					}else{
-    						System.out.println("Delete error: one or more conditions are not complete;"); 
-        					return "99";
-    					}
-    				}else{
-    					System.out.println("Delete error: one or more conditions are not complete;"); 
-    					return "99";
-    				}
-    			}    		
-    		i++;
-    		}
-    		if(bracket<0){
-    			System.out.println("Delete error: ( and ) are not right;"); 
-				return "99";
-    		}else{
-    			System.out.println("条件被提取成功");
-    			return "00";
-    		}
-    		
-    	}
-    	return "99";
-    }
-    
-    
-    //===================select================
-    public static String select_clause(ArrayList<String> in){
-    	//判断表名存在  且不是关键字
-    	String SQL=new String();
-    	if(in.size()==5){
-    		if(in.get(4).equals(";")){
-    			System.out.println("Select success");
-    			return "00";
-    		}else{
-    			System.out.println("Select error: unknown error ");
-    			SQL="99";
-    			return SQL;
-    		}
-    	}else if(in.size()<5){
-			System.out.println("Select error:incomplete select sentence");
-			SQL="99";
-			return SQL;
-    	}else if (in.get(4).equals("where")){
-    		int bracket=0;
-    		int i=5;
-    		ArrayList<Conditions> cons=new ArrayList<Conditions>();
-    		while(i<in.size()){
-    			if(in.get(i).equals(";")){
-    				break;
-    			}
-    			if(in.get(i).equals("and")){
-    				i++;
-    				continue;
-    			}
-    			if(in.get(i).equals("(")){
-    				bracket++;	
-    			}
-    			else if(in.get(i).equals(")")){
-    				bracket++;
-    				if(bracket<0){
-    					System.out.println("Select error: ( and ) are not right;"); 
-        				return "99";
-    				}
-    			}
-    			else{
-    				//System.out.println(in.size()+i);
-    				if(i+2<in.size()){
-    					if(!KeyWord.isKeyword(in.get(i)) && !KeyWord.isKeyword(in.get(i+2)) && KeyWord.isOp(in.get(i+1)) ){
-    						cons.add(new Conditions(in.get(i),in.get(i+1),in.get(i+2)));
-    						System.out.println("chenggong");
-    						i=i+3;
-    						if(in.get(i).equals("and")){
-    							i++;
-    							continue;
-    						}else if(in.get(i).equals(";")){
-    							break;
-    						}
-    						
-    					}else if(i+4<in.size()){
-    						System.out.println(!KeyWord.isKeyword(in.get(i)));
-    						System.out.println(!KeyWord.isKeyword(in.get(i+3) ));
-    						System.out.println(KeyWord.isOp(in.get(i+1)));
-    						System.out.println(!in.get(i+2).equals("\'"));
-    						if(!KeyWord.isKeyword(in.get(i)) && !KeyWord.isKeyword(in.get(i+3)) && KeyWord.isOp(in.get(i+1))&& in.get(i+2).equals("\'") && in.get(i+4).equals("\'") ){
-        						cons.add(new Conditions(in.get(i),in.get(i+1),in.get(i+3)));
-        						System.out.println("chenggong");
-        						i=i+5;
-        						if(in.get(i).equals("and")){
-        							i++;
-        							continue;
-        						}else if(in.get(i).equals(";")){
-        							break;
-        						}
-        					}else{
-        						System.out.println("Select error: one or more conditions are not complete;"); 
-            					return "99";
-        					}
-    					}else{
-    						System.out.println("Select error: one or more conditions are not complete;"); 
-        					return "99";
-    					}
-    				}else{
-    					System.out.println("Select error: one or more conditions are not complete;"); 
-    					return "99";
-    				}
-    			}    		
-    		i++;
-    		}
-    		if(bracket<0){
-    			System.out.println("Select error: ( and ) are not right;"); 
-				return "99";
-    		}else{
-    			System.out.println("条件被提取成功");
-    			return "00";
-    		}
-    		
-    	}
-    	return "99";
-    }
-    
-    //========exe=================
+//    
+//    //===================delete================
+//    public static Response delete_clause(ArrayList<String> in){
+//    	String SQL=new String();
+//    	if(in.size()==4){
+//    		if(in.get(3).equals(";")){
+//    			System.out.println("Delete success");
+//    			return "00";
+//    		}else{
+//    			System.out.println("Delete error: unknown error");
+//    			SQL="99";
+//    			return SQL;
+//    		}
+//    	}else if(in.size()<4){
+//			System.out.println("Delete error:incomplete delete sentence");
+//			SQL="99";
+//			return SQL;
+//    	}else if (in.get(3).equals("where")){
+//    		int bracket=0;
+//    		int i=4;
+//    		ArrayList<Conditions> cons=new ArrayList<Conditions>();
+//    		while(i<in.size()){
+//    			if(in.get(i).equals(";")){
+//    				break;
+//    			}
+//    			if(in.get(i).equals("and")){
+//    				i++;
+//    				continue;
+//    			}
+//    			if(in.get(i).equals("(")){
+//    				bracket++;	
+//    			}
+//    			else if(in.get(i).equals(")")){
+//    				bracket++;
+//    				if(bracket<0){
+//    					System.out.println("Delete error: ( and ) are not right;"); 
+//        				return "99";
+//    				}
+//    			}
+//    			else{
+//    				//System.out.println(in.size()+i);
+//    				if(i+2<in.size()){
+//    					if(!KeyWord.isKeyword(in.get(i)) && !KeyWord.isKeyword(in.get(i+2)) && KeyWord.isOp(in.get(i+1)) ){
+//    						cons.add(new Conditions(in.get(i),in.get(i+1),in.get(i+2)));
+//    						System.out.println("chenggong");
+//    						i=i+3;
+//    						if(in.get(i).equals("and")){
+//    							i++;
+//    							continue;
+//    						}else if(in.get(i).equals(";")){
+//    							break;
+//    						}
+//    						
+//    					}else if(i+4<in.size()){
+//    						System.out.println(!KeyWord.isKeyword(in.get(i)));
+//    						System.out.println(!KeyWord.isKeyword(in.get(i+3) ));
+//    						System.out.println(KeyWord.isOp(in.get(i+1)));
+//    						System.out.println(!in.get(i+2).equals("\'"));
+//    						if(!KeyWord.isKeyword(in.get(i)) && !KeyWord.isKeyword(in.get(i+3)) && KeyWord.isOp(in.get(i+1))&& in.get(i+2).equals("\'") && in.get(i+4).equals("\'") ){
+//        						cons.add(new Conditions(in.get(i),in.get(i+1),in.get(i+3)));
+//        						System.out.println("chenggong");
+//        						i=i+5;
+//        						if(in.get(i).equals("and")){
+//        							i++;
+//        							continue;
+//        						}else if(in.get(i).equals(";")){
+//        							break;
+//        						}
+//        					}else{
+//        						System.out.println("1Delete error: one or more conditions are not complete;"); 
+//            					return "99";
+//        					}
+//    					}else{
+//    						System.out.println("Delete error: one or more conditions are not complete;"); 
+//        					return "99";
+//    					}
+//    				}else{
+//    					System.out.println("Delete error: one or more conditions are not complete;"); 
+//    					return "99";
+//    				}
+//    			}    		
+//    		i++;
+//    		}
+//    		if(bracket<0){
+//    			System.out.println("Delete error: ( and ) are not right;"); 
+//				return "99";
+//    		}else{
+//    			System.out.println("条件被提取成功");
+//    			return "00";
+//    		}
+//    		
+//    	}
+//    	return "99";
+//    }
+//    
+//    
+//    //===================select================
+//    public static Response select_clause(ArrayList<String> in){
+//    	//判断表名存在  且不是关键字
+//    	String SQL=new String();
+//    	if(in.size()==5){
+//    		if(in.get(4).equals(";")){
+//    			System.out.println("Select success");
+//    			return "00";
+//    		}else{
+//    			System.out.println("Select error: unknown error ");
+//    			SQL="99";
+//    			return SQL;
+//    		}
+//    	}else if(in.size()<5){
+//			System.out.println("Select error:incomplete select sentence");
+//			SQL="99";
+//			return SQL;
+//    	}else if (in.get(4).equals("where")){
+//    		int bracket=0;
+//    		int i=5;
+//    		ArrayList<Conditions> cons=new ArrayList<Conditions>();
+//    		while(i<in.size()){
+//    			if(in.get(i).equals(";")){
+//    				break;
+//    			}
+//    			if(in.get(i).equals("and")){
+//    				i++;
+//    				continue;
+//    			}
+//    			if(in.get(i).equals("(")){
+//    				bracket++;	
+//    			}
+//    			else if(in.get(i).equals(")")){
+//    				bracket++;
+//    				if(bracket<0){
+//    					System.out.println("Select error: ( and ) are not right;"); 
+//        				return "99";
+//    				}
+//    			}
+//    			else{
+//    				//System.out.println(in.size()+i);
+//    				if(i+2<in.size()){
+//    					if(!KeyWord.isKeyword(in.get(i)) && !KeyWord.isKeyword(in.get(i+2)) && KeyWord.isOp(in.get(i+1)) ){
+//    						cons.add(new Conditions(in.get(i),in.get(i+1),in.get(i+2)));
+//    						System.out.println("chenggong");
+//    						i=i+3;
+//    						if(in.get(i).equals("and")){
+//    							i++;
+//    							continue;
+//    						}else if(in.get(i).equals(";")){
+//    							break;
+//    						}
+//    						
+//    					}else if(i+4<in.size()){
+//    						System.out.println(!KeyWord.isKeyword(in.get(i)));
+//    						System.out.println(!KeyWord.isKeyword(in.get(i+3) ));
+//    						System.out.println(KeyWord.isOp(in.get(i+1)));
+//    						System.out.println(!in.get(i+2).equals("\'"));
+//    						if(!KeyWord.isKeyword(in.get(i)) && !KeyWord.isKeyword(in.get(i+3)) && KeyWord.isOp(in.get(i+1))&& in.get(i+2).equals("\'") && in.get(i+4).equals("\'") ){
+//        						cons.add(new Conditions(in.get(i),in.get(i+1),in.get(i+3)));
+//        						System.out.println("chenggong");
+//        						i=i+5;
+//        						if(in.get(i).equals("and")){
+//        							i++;
+//        							continue;
+//        						}else if(in.get(i).equals(";")){
+//        							break;
+//        						}
+//        					}else{
+//        						System.out.println("Select error: one or more conditions are not complete;"); 
+//            					return "99";
+//        					}
+//    					}else{
+//    						System.out.println("Select error: one or more conditions are not complete;"); 
+//        					return "99";
+//    					}
+//    				}else{
+//    					System.out.println("Select error: one or more conditions are not complete;"); 
+//    					return "99";
+//    				}
+//    			}    		
+//    		i++;
+//    		}
+//    		if(bracket<0){
+//    			System.out.println("Select error: ( and ) are not right;"); 
+//				return "99";
+//    		}else{
+//    			System.out.println("条件被提取成功");
+//    			return "00";
+//    		}
+//    		
+//    	}
+//    	return "99";
+//    }
+//    
+    //========exeeeee=================
     public static String execfile_clause(ArrayList<String> in){
     	//for every sentence input_classify();
     	return "99";
     }
     
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 		// TODO Auto-generated method stub
 		Scanner scan = new Scanner(System.in);
 		String in = scan.nextLine();
@@ -339,115 +345,108 @@ public class Interpreter {
 				in = in + " " + scan.nextLine();
 			}
 			ArrayList<String> words = split_word.my_split(in);
-			System.out.println(input_classify(words));
+			System.out.println(input_classify(words).getInfo());
 			in = scan.nextLine();
 		}
 	}
 	
 	
 	
-	private static String input_classify(ArrayList<String> words) {
-		String SQL;
-		if(words.size()<2){
-			System.out.println("not enough words in the sentence");
-		}
-		if(words.get(0).equals("help")){
-			SQL=help_clause(words);
+	private static Response input_classify(ArrayList<String> words) throws IOException {
+		if(words.size()<2){		
+			return new Response(false, "not enough words in the sentence");
+		}else if(words.get(0).equals("help")){
+			return help_clause(words);
 		}
 		else if(words.get(0).equals("quit")){
-			SQL=quit_clause(words);
+			return quit_clause(words);
 		}
 		else if(words.get(0).equals("create")){
-			SQL=create_clause(words);
+			return create_clause(words);
 		}
 		else if(words.get(0).equals("drop")){
-			SQL=drop_clause(words);
+			return drop_clause(words);
 		}
 		else if(words.get(0).equals("insert")){
-			SQL=insert_clause(words);
+			return insert_clause(words);
 		}
-		else if(words.get(0).equals("delete") && words.get(1).equals("from")){
-			SQL=delete_clause(words);
-		}else if(words.get(0).equals("delete")) {
-			System.out.println("Delete error: 'from' was missing");
-			SQL="99";
-		}
-		else if(words.get(0).equals("execfile")){
-			SQL=execfile_clause(words);
-		}
-		else if(words.get(0).equals("select")&& words.get(1).equals("*")&& words.get(2).equals("from")){
-			SQL=select_clause(words);
-		}
-		else if(words.get(0).equals("select")&& words.get(1).equals("*")){
-			System.out.println("Select error: 'from' was missing");
-			SQL="99";
-		}
-		else if(words.get(0).equals("select")&& words.get(2).equals("from")){
-			System.out.println("Delete error: '*' was missing");
-			SQL="99";
-		}
+//		else if(words.get(0).equals("delete") && words.get(1).equals("from")){
+//			return delete_clause(words);
+//		}else if(words.get(0).equals("delete")) {
+//			return new Response(false,"Delete error: 'from' was missing");
+//		}
+//		else if(words.get(0).equals("execfile")){
+//			//SQL=execfile_clause(words);
+//		}
+//		else if(words.get(0).equals("select")&& words.get(1).equals("*")&& words.get(2).equals("from")){
+//			return select_clause(words);
+//		}
+//		else if(words.get(0).equals("select")&& words.get(1).equals("*")){
+//			return new Response(false, "Delete error: '*' was missing");
+//		}
+//		else if(words.get(0).equals("select")&& words.get(2).equals("from")){
+//			return new Response(false, "Delete error: '*' was missing");
+//		}
 		else {
-			SQL="99";
-			System.out.println("sorry, I don't know what you mean");
+			return new Response(false, "Sorry,I don't know what you mean");
 		}
-		return SQL;
 	}
 
 
 	//quit
-	public static String quit_clause(ArrayList<String> in )
+	//done
+	public static Response quit_clause(ArrayList<String> in )
 	{
-		String SQL=new String();
 		if(in.get(1).equals(";")){
 			System.out.println("bye bye");
 			System.exit(0);
+			return new Response(false, "if you want exit,please input quit;  Do not add any other words");
 		}
 		else{
-			SQL=new String("99");
-			System.out.println("if you want exit,please input quit;  Do not add any other words");
+			return new Response(false, "if you want exit,please input quit;  Do not add any other words");
 		}
-		return SQL;
 	}
-	//help
-	public static String help_clause(ArrayList<String> in )
+	
+	//help;
+	//done
+	public static Response help_clause(ArrayList<String> in )
 	{
-		String SQL;
 		if(in.get(1).equals(";")){
-			SQL=new String("80");
 			show_help();
+			return new Response(true, "help has shown");
+			
 		}
 		else{
-			SQL=new String("99");
-			System.out.println("if you want help,please input help;  Do not add any other words");
+			return new Response(false, "if you want help,please input help;  Do not add any other words");
 		}
-		return SQL;
 	}
-    public static String drop_clause(ArrayList<String> in )
+	
+	
+	// drop table xxx;
+	// drop index xxx;
+	// done
+    public static Response drop_clause(ArrayList<String> in ) throws IOException
     {
-    	String SQL;
     	if(in.size()<4){
-    		SQL="99";
-    		System.out.println("illegal drop sentences");
-    		return SQL;
+    		return new Response(false, "illegal drop sentences");
     	}
-    	if(in.get(1).equals("database")&&in.get(3).equals(";")){
-    		SQL=new String("10");
-    		SQL = SQL+in.get(2);
-    	}
-    	else if(in.get(1).equals("table")&&in.get(3).equals(";")){
-    		SQL=new String("11");
-    		SQL = SQL+in.get(2);
+    	if(in.get(1).equals("table")&&in.get(3).equals(";")){
+    		if(KeyWord.isKeyword(in.get(2))){
+    			return new Response(false, "table name cannot be a keyword");
+    		}else{
+    		return CatalogManager.dropTable(in.get(2));
+    		}
     	}
     	else if(in.get(1).equals("index")&&in.get(3).equals(";")){
-    		SQL=new String("12");
-    		SQL = SQL+in.get(2);
+    		if(KeyWord.isKeyword(in.get(2))){
+    			return new Response(false, "index name cannot be a keyword");
+    		}else{
+    		return CatalogManager.dropIndex(in.get(2));
+    		}
     	}
     	else{
-    		SQL=new String("99");
-    		System.out.println("--if you want help,please input help;  Do not add any other words");
+    		return new Response(false, "please tell what you want to drop");
     	}
-    	return SQL;
     }
-
 }
 //delete from a where a = 3 and b = 5 ;
