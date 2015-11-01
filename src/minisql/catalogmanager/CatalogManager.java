@@ -100,7 +100,7 @@ public class CatalogManager {
 
                 for (int i = 1; i < items.length-1; i = i+1) {
                     String fieldInfo[] = items[i].split("/");
-                    if (fieldInfo[2].equals(fieldName)){
+                    if (fieldInfo[0].equals(fieldName)){
                         bufferedReader.close();
                         return true;
                     }
@@ -116,8 +116,12 @@ public class CatalogManager {
             return new Response(false, "Index has existed!");
         }
 
-        if (isFieldExist(tableName,fieldName)){
+        if (!isFieldExist(tableName,fieldName)){
             return new Response(false,"Field doesn't exist!");
+        }
+
+        if (!isFieldUnique(tableName,fieldName)){
+            return new Response(false,"Field isn't unique!");
         }
 
         File indexInfo = new File("CatalogIndexInfo");
@@ -127,6 +131,20 @@ public class CatalogManager {
         bufferedWriter.newLine();
         bufferedWriter.close();
         return new Response(true);
+    }
+
+    private static boolean isFieldUnique(String tableName,String fieldName) throws IOException {
+
+        if (isFieldExist(tableName,fieldName)) {
+
+            ArrayList<Field> fields = readTableFields(tableName);
+            for (Field field : fields) {
+                if (field.getName().equals(fieldName)) {
+                    return field.getUnique();
+                }
+            }
+        }
+        return false;
     }
 
     public static boolean isIndexExist(String tableName, String fieldName) throws IOException {
@@ -233,14 +251,13 @@ public class CatalogManager {
         ArrayList<Field> fields = new ArrayList<>();
         fields.add(field);
 
-        CatalogManager.createTable("hello",fields,0);
-        if (CatalogManager.isTableExist("hello")){
-            System.out.print(true);
-        };
+        //CatalogManager.createTable("hello",fields,0);
+        System.out.print(CatalogManager.isTableExist("hello"));
 
-        CatalogManager.isIndexExist("myindex");
-        CatalogManager.createIndex("hello","name","myindex");
-        CatalogManager.isIndexExist("myindex");
+        System.out.print(CatalogManager.isIndexExist("myindex"));
+        System.out.print(isFieldExist("hello","name"));
+                CatalogManager.createIndex("hello", "name", "myindex");
+        System.out.print(CatalogManager.isIndexExist("myindex"));
     }
 }
 
