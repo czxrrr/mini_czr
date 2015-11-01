@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 public class KeyWord {
 	static ArrayList<String> keys=new ArrayList<String>();
-	public boolean isKeyword(String a){
+	public static boolean isKeyword(String a){
 		keys.add("create");
 		keys.add("primary");
 		keys.add("key");
@@ -31,7 +31,19 @@ public class KeyWord {
 		//keys.add("delete");
 		return (keys.indexOf(a)>=0);
 	}
-	public static void main(){
-		
+	public static boolean isOp(String a){
+		keys.add("<");
+		keys.add("<>");
+		keys.add(">");
+		keys.add("<=");
+		keys.add(">=");
+		keys.add("=");
+		//keys.add("delete");
+		return (keys.indexOf(a)>=0);
+	}
+	public static void main(String[] args){
+		System.out.println(isOp("="));
+		System.out.println(isKeyword("="));
+		System.out.println("\'");
 	}
 }
