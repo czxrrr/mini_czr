@@ -135,7 +135,7 @@ public class Interpreter {
     						System.out.println("insert "+in.get(2)+" "+values);
     						ArrayList<Field> field=CatalogManager.readTableFields(in.get(2));
     						Record rec=new Record(values);
-    						RecordManagerV2.insertRecord(in.get(2),field,rec);
+    						return RecordManagerV2.insertRecord(in.get(2),field,rec);
     					}
     					else{
     						return new Response(false,"no ) or ; was found");
@@ -145,7 +145,7 @@ public class Interpreter {
     				values.add(in.get(i));
     			}
     		}
-    		return new Response(false,"22");
+    		return new Response(false,"parameters is not enough");
     	}else{
     		return new Response(false,"illegal insert sentence");
     	}
@@ -154,21 +154,18 @@ public class Interpreter {
     
     
     //===================delete================
-    public static Response delete_clause(ArrayList<String> in){
+    public static Response delete_clause(ArrayList<String> in) throws IOException{
     	String SQL=new String();
     	if(in.size()==4){
     		if(in.get(3).equals(";")){
-    			System.out.println("Delete success");
-    			return "00";
+    			ArrayList<Field> fields=CatalogManager.readTableFields(in.get(2));
+    			return RecordManagerV3.deleteRecord(in.get(2), fields, null);	
     		}else{
-    			System.out.println("Delete error: unknown error");
-    			SQL="99";
-    			return SQL;
+    			return new Response(false,"Delete error: unknown error");
     		}
     	}else if(in.size()<4){
-			System.out.println("Delete error:incomplete delete sentence");
-			SQL="99";
-			return SQL;
+    		return new Response(false,"Delete error:incomplete delete sentence");
+
     	}else if (in.get(3).equals("where")){
     		int bracket=0;
     		int i=4;
@@ -187,8 +184,7 @@ public class Interpreter {
     			else if(in.get(i).equals(")")){
     				bracket++;
     				if(bracket<0){
-    					System.out.println("Delete error: ( and ) are not right;"); 
-        				return "99";
+    					return new Response(false,"Delete error: ( and ) are not right;"); 
     				}
     			}
     			else{
@@ -221,30 +217,27 @@ public class Interpreter {
         							break;
         						}
         					}else{
-        						System.out.println("1Delete error: one or more conditions are not complete;"); 
-            					return "99";
+        						return new Response(false,"Delete error: one or more conditions are not complete;"); 
+
         					}
     					}else{
-    						System.out.println("Delete error: one or more conditions are not complete;"); 
-        					return "99";
+    						return new Response(false,"Delete error: one or more conditions are not complete;"); 
     					}
     				}else{
-    					System.out.println("Delete error: one or more conditions are not complete;"); 
-    					return "99";
+    					return new Response(false,"Delete error: one or more conditions are not complete;"); 
     				}
     			}    		
     		i++;
     		}
     		if(bracket<0){
-    			System.out.println("Delete error: ( and ) are not right;"); 
-				return "99";
+    			return new Response(false,"Delete error: ( and ) are not right;"); 
     		}else{
-    			System.out.println("条件被提取成功");
-    			return "00";
+    			return new Response(false,"条件被提取成功");
     		}
     		
     	}
-    	return "99";
+    	return new Response(false,"Delete error");
+
     }
     
     
