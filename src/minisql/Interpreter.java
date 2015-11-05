@@ -115,7 +115,7 @@ public class Interpreter {
     	}
     }
     
-    public static Response insert_clause(ArrayList<String> in )
+    public static Response insert_clause(ArrayList<String> in ) throws IOException
     {
     	
     	String SQL=new String();
@@ -133,6 +133,9 @@ public class Interpreter {
     				else{
     					if(in.get(i).equals(")") && in.get(i+1).equals(";")){
     						System.out.println("insert "+in.get(2)+" "+values);
+    						ArrayList<Field> field=CatalogManager.readTableFields(in.get(2));
+    						Record rec=new Record(values);
+    						RecordManagerV2.insertRecord(in.get(2),field,rec);
     					}
     					else{
     						return new Response(false,"no ) or ; was found");
@@ -149,102 +152,102 @@ public class Interpreter {
     }
    
     
-//    
-//    //===================delete================
-//    public static Response delete_clause(ArrayList<String> in){
-//    	String SQL=new String();
-//    	if(in.size()==4){
-//    		if(in.get(3).equals(";")){
-//    			System.out.println("Delete success");
-//    			return "00";
-//    		}else{
-//    			System.out.println("Delete error: unknown error");
-//    			SQL="99";
-//    			return SQL;
-//    		}
-//    	}else if(in.size()<4){
-//			System.out.println("Delete error:incomplete delete sentence");
-//			SQL="99";
-//			return SQL;
-//    	}else if (in.get(3).equals("where")){
-//    		int bracket=0;
-//    		int i=4;
-//    		ArrayList<Conditions> cons=new ArrayList<Conditions>();
-//    		while(i<in.size()){
-//    			if(in.get(i).equals(";")){
-//    				break;
-//    			}
-//    			if(in.get(i).equals("and")){
-//    				i++;
-//    				continue;
-//    			}
-//    			if(in.get(i).equals("(")){
-//    				bracket++;	
-//    			}
-//    			else if(in.get(i).equals(")")){
-//    				bracket++;
-//    				if(bracket<0){
-//    					System.out.println("Delete error: ( and ) are not right;"); 
-//        				return "99";
-//    				}
-//    			}
-//    			else{
-//    				//System.out.println(in.size()+i);
-//    				if(i+2<in.size()){
-//    					if(!KeyWord.isKeyword(in.get(i)) && !KeyWord.isKeyword(in.get(i+2)) && KeyWord.isOp(in.get(i+1)) ){
-//    						cons.add(new Conditions(in.get(i),in.get(i+1),in.get(i+2)));
-//    						System.out.println("chenggong");
-//    						i=i+3;
-//    						if(in.get(i).equals("and")){
-//    							i++;
-//    							continue;
-//    						}else if(in.get(i).equals(";")){
-//    							break;
-//    						}
-//    						
-//    					}else if(i+4<in.size()){
-//    						System.out.println(!KeyWord.isKeyword(in.get(i)));
-//    						System.out.println(!KeyWord.isKeyword(in.get(i+3) ));
-//    						System.out.println(KeyWord.isOp(in.get(i+1)));
-//    						System.out.println(!in.get(i+2).equals("\'"));
-//    						if(!KeyWord.isKeyword(in.get(i)) && !KeyWord.isKeyword(in.get(i+3)) && KeyWord.isOp(in.get(i+1))&& in.get(i+2).equals("\'") && in.get(i+4).equals("\'") ){
-//        						cons.add(new Conditions(in.get(i),in.get(i+1),in.get(i+3)));
-//        						System.out.println("chenggong");
-//        						i=i+5;
-//        						if(in.get(i).equals("and")){
-//        							i++;
-//        							continue;
-//        						}else if(in.get(i).equals(";")){
-//        							break;
-//        						}
-//        					}else{
-//        						System.out.println("1Delete error: one or more conditions are not complete;"); 
-//            					return "99";
-//        					}
-//    					}else{
-//    						System.out.println("Delete error: one or more conditions are not complete;"); 
-//        					return "99";
-//    					}
-//    				}else{
-//    					System.out.println("Delete error: one or more conditions are not complete;"); 
-//    					return "99";
-//    				}
-//    			}    		
-//    		i++;
-//    		}
-//    		if(bracket<0){
-//    			System.out.println("Delete error: ( and ) are not right;"); 
-//				return "99";
-//    		}else{
-//    			System.out.println("条件被提取成功");
-//    			return "00";
-//    		}
-//    		
-//    	}
-//    	return "99";
-//    }
-//    
-//    
+    
+    //===================delete================
+    public static Response delete_clause(ArrayList<String> in){
+    	String SQL=new String();
+    	if(in.size()==4){
+    		if(in.get(3).equals(";")){
+    			System.out.println("Delete success");
+    			return "00";
+    		}else{
+    			System.out.println("Delete error: unknown error");
+    			SQL="99";
+    			return SQL;
+    		}
+    	}else if(in.size()<4){
+			System.out.println("Delete error:incomplete delete sentence");
+			SQL="99";
+			return SQL;
+    	}else if (in.get(3).equals("where")){
+    		int bracket=0;
+    		int i=4;
+    		ArrayList<Conditions> cons=new ArrayList<Conditions>();
+    		while(i<in.size()){
+    			if(in.get(i).equals(";")){
+    				break;
+    			}
+    			if(in.get(i).equals("and")){
+    				i++;
+    				continue;
+    			}
+    			if(in.get(i).equals("(")){
+    				bracket++;	
+    			}
+    			else if(in.get(i).equals(")")){
+    				bracket++;
+    				if(bracket<0){
+    					System.out.println("Delete error: ( and ) are not right;"); 
+        				return "99";
+    				}
+    			}
+    			else{
+    				//System.out.println(in.size()+i);
+    				if(i+2<in.size()){
+    					if(!KeyWord.isKeyword(in.get(i)) && !KeyWord.isKeyword(in.get(i+2)) && KeyWord.isOp(in.get(i+1)) ){
+    						cons.add(new Conditions(in.get(i),in.get(i+1),in.get(i+2)));
+    						System.out.println("chenggong");
+    						i=i+3;
+    						if(in.get(i).equals("and")){
+    							i++;
+    							continue;
+    						}else if(in.get(i).equals(";")){
+    							break;
+    						}
+    						
+    					}else if(i+4<in.size()){
+    						System.out.println(!KeyWord.isKeyword(in.get(i)));
+    						System.out.println(!KeyWord.isKeyword(in.get(i+3) ));
+    						System.out.println(KeyWord.isOp(in.get(i+1)));
+    						System.out.println(!in.get(i+2).equals("\'"));
+    						if(!KeyWord.isKeyword(in.get(i)) && !KeyWord.isKeyword(in.get(i+3)) && KeyWord.isOp(in.get(i+1))&& in.get(i+2).equals("\'") && in.get(i+4).equals("\'") ){
+        						cons.add(new Conditions(in.get(i),in.get(i+1),in.get(i+3)));
+        						System.out.println("chenggong");
+        						i=i+5;
+        						if(in.get(i).equals("and")){
+        							i++;
+        							continue;
+        						}else if(in.get(i).equals(";")){
+        							break;
+        						}
+        					}else{
+        						System.out.println("1Delete error: one or more conditions are not complete;"); 
+            					return "99";
+        					}
+    					}else{
+    						System.out.println("Delete error: one or more conditions are not complete;"); 
+        					return "99";
+    					}
+    				}else{
+    					System.out.println("Delete error: one or more conditions are not complete;"); 
+    					return "99";
+    				}
+    			}    		
+    		i++;
+    		}
+    		if(bracket<0){
+    			System.out.println("Delete error: ( and ) are not right;"); 
+				return "99";
+    		}else{
+    			System.out.println("条件被提取成功");
+    			return "00";
+    		}
+    		
+    	}
+    	return "99";
+    }
+    
+    
 //    //===================select================
 //    public static Response select_clause(ArrayList<String> in){
 //    	//判断表名存在  且不是关键字
@@ -340,11 +343,7 @@ public class Interpreter {
 //    	return "99";
 //    }
 //    
-    //========exeeeee=================
-    public static String execfile_clause(ArrayList<String> in){
-    	//for every sentence input_classify();
-    	return "99";
-    }
+
     
 	public static void main(String[] args) throws IOException {
 		// TODO Auto-generated method stub
