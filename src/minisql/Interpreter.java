@@ -341,17 +341,15 @@ public class Interpreter {
 	public static void main(String[] args) throws IOException {
 		// TODO Auto-generated method stub
 		Scanner scan = new Scanner(System.in);
-		String in = scan.nextLine();
+		String in;
 		while(true){
-			if (in.equals("0")){
-				break;
-			}
-			while(in.indexOf(';')<0){
+			System.out.print(">>");
+			in = scan.nextLine();
+			while(in.indexOf(';')<0){	//一直读，读到有分号结束
 				in = in + " " + scan.nextLine();
 			}
 			ArrayList<String> words = split_word.my_split(in);
-			System.out.println(">>"+input_classify(words).getInfo());
-			in = scan.nextLine();
+			System.out.println(input_classify(words).getInfo());
 		}
 	}
 	
@@ -394,7 +392,7 @@ public class Interpreter {
 //			return new Response(false, "Delete error: '*' was missing");
 //		}
 		else {
-			return new Response(false, "Sorry,I don't know what you mean");
+			return new Response(false, "Syntax error!");
 		}
 	}
 	

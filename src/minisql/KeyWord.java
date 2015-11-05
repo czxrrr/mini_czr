@@ -6,6 +6,7 @@ public class KeyWord {
 	static ArrayList<String> keys=new ArrayList<String>();
 	
 	public static boolean isKeyword(String a,String b,String c){
+		//String keyWord = ["create",]
 		keys.add("create");
 		keys.add("primary");
 		keys.add("key");
