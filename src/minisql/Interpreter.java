@@ -1,5 +1,8 @@
 package minisql;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Scanner;
@@ -385,9 +388,10 @@ public class Interpreter {
 //		}else if(words.get(0).equals("delete")) {
 //			return new Response(false,"Delete error: 'from' was missing");
 //		}
-//		else if(words.get(0).equals("execfile")){
-//			//SQL=execfile_clause(words);
-//		}
+		else if(words.get(0).equals("execfile")){
+			execfile(words);
+			return new Response(true,"execfile done");
+		}
 //		else if(words.get(0).equals("select")&& words.get(1).equals("*")&& words.get(2).equals("from")){
 //			return select_clause(words);
 //		}
@@ -401,7 +405,34 @@ public class Interpreter {
 			return new Response(false, "Sorry,I don't know what you mean");
 		}
 	}
-
+	
+	
+	//execfile
+	//done 
+	public static void execfile(ArrayList<String> in) throws IOException{
+		if(!in.get(2).equals(";")){
+			System.out.println("error:please input \" execfile filename;   \"");
+		}
+		File file= new File(in.get(1));
+		if (!file.exists()){
+			System.out.println("error:the file was not found"); 
+			return;
+		}
+		BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
+	    String inline;
+	    while ((inline = bufferedReader.readLine()) != null) {
+  			if (inline.equals("0")){
+  				break;
+  			}
+  			while(inline.indexOf(';')<0){
+  				inline = inline + " " + bufferedReader.readLine();
+  			}
+	  	
+  			ArrayList<String> words = split_word.my_split(inline);
+  			System.out.println(">>"+input_classify(words).getInfo());
+	    }
+      	bufferedReader.close();
+	}
 
 	//quit
 	//done
