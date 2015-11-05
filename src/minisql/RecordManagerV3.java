@@ -13,7 +13,7 @@ public class RecordManagerV3{
     }
 	
 	
-	public void printRecord(ArrayList<Field> fields, ArrayList<Record> records)throws IOException {
+	public static void printRecord(ArrayList<Field> fields, ArrayList<Record> records)throws IOException {
 		
 		for(Field i:fields)
 		{
@@ -89,13 +89,15 @@ public class RecordManagerV3{
 	}
 	
 	
-	public Response selectRecord(String tableName, ArrayList<Field> fields, ArrayList<Conditions> cons) throws IOException {
+	public static Response selectRecord(String tableName, ArrayList<Field> fields, ArrayList<Conditions> cons) throws IOException {
 		
 		ArrayList<Record> records=RecordManagerV2.getRecord(tableName,fields);
 		ArrayList<Record> result=new ArrayList<Record>();
+		if(records!=null){
 		for(Record i:records)
 		{
 			boolean flag=true;
+			if(cons!=null)
 			for(Conditions j:cons)
 			{
 				if(!compareRecord(fields,i,j))
@@ -108,14 +110,14 @@ public class RecordManagerV3{
 			{
 				result.add(i);
 			}
-		}
+		}}
 		if(result.size()==0)
 		{
 			System.out.println("√ª”–∑˚∫œÃıº˛µƒº«¬º");
 		}
 		else 
 		{
-			System.out.println("π≤’“µΩ"+result.size()+"Ãıº«¬º");
+			System.out.println(result.size()+" records was deleted");
 			printRecord(fields,result);
 		}
 		
@@ -134,14 +136,17 @@ public class RecordManagerV3{
 		for(Record i:records)
 		{
 			boolean flag=true;
-			for(Conditions j:cons)
-			{
-				if(!compareRecord(fields,i,j))
+			if(cons!=null){
+				for(Conditions j:cons)
 				{
-					flag=false;
-					break;
+					if(!compareRecord(fields,i,j))
+					{
+						flag=false;
+						break;
+					}
 				}
 			}
+
 			if(flag==true)
 			{
 				cnt++;
@@ -167,14 +172,14 @@ public class RecordManagerV3{
 		}
 		else
 		{
-			System.out.println("π≤…æ≥˝"+cnt+"Ãıº«¬º");
+			System.out.println(cnt+"record was deleted");
 		}
 		
 		return new Response(true,"delete "+cnt);
 		
 	}
 	public static void main(String[] args) throws IOException{
-		deleteRecord("ab",CatalogManager.readTableFields("ab"),null);
+		selectRecord("ab",CatalogManager.readTableFields("ab"),null);
 		
 	}
 
