@@ -202,10 +202,10 @@ public class Interpreter {
     						}
     						
     					}else if(i+4<in.size()){
-    						System.out.println(!KeyWord.isKeyword(in.get(i)));
-    						System.out.println(!KeyWord.isKeyword(in.get(i+3) ));
-    						System.out.println(KeyWord.isOp(in.get(i+1)));
-    						System.out.println(!in.get(i+2).equals("\'"));
+//    						System.out.println(!KeyWord.isKeyword(in.get(i)));
+//    						System.out.println(!KeyWord.isKeyword(in.get(i+3) ));
+//    						System.out.println(KeyWord.isOp(in.get(i+1)));
+//    						System.out.println(!in.get(i+2).equals("\'"));
     						if(!KeyWord.isKeyword(in.get(i)) && !KeyWord.isKeyword(in.get(i+3)) && KeyWord.isOp(in.get(i+1))&& in.get(i+2).equals("\'") && in.get(i+4).equals("\'") ){
         						cons.add(new Conditions(in.get(2),in.get(i),in.get(i+1),in.get(i+3)));
         						System.out.println("chenggong");
@@ -256,101 +256,111 @@ public class Interpreter {
     }
     
     
-//    //===================select================
-//    public static Response select_clause(ArrayList<String> in){
-//    	//判断表名存在  且不是关键字
-//    	String SQL=new String();
-//    	if(in.size()==5){
-//    		if(in.get(4).equals(";")){
-//    			System.out.println("Select success");
-//    			return "00";
-//    		}else{
-//    			System.out.println("Select error: unknown error ");
-//    			SQL="99";
-//    			return SQL;
-//    		}
-//    	}else if(in.size()<5){
-//			System.out.println("Select error:incomplete select sentence");
-//			SQL="99";
-//			return SQL;
-//    	}else if (in.get(4).equals("where")){
-//    		int bracket=0;
-//    		int i=5;
-//    		ArrayList<Conditions> cons=new ArrayList<Conditions>();
-//    		while(i<in.size()){
-//    			if(in.get(i).equals(";")){
-//    				break;
-//    			}
-//    			if(in.get(i).equals("and")){
-//    				i++;
-//    				continue;
-//    			}
-//    			if(in.get(i).equals("(")){
-//    				bracket++;	
-//    			}
-//    			else if(in.get(i).equals(")")){
-//    				bracket++;
-//    				if(bracket<0){
-//    					System.out.println("Select error: ( and ) are not right;"); 
-//        				return "99";
-//    				}
-//    			}
-//    			else{
-//    				//System.out.println(in.size()+i);
-//    				if(i+2<in.size()){
-//    					if(!KeyWord.isKeyword(in.get(i)) && !KeyWord.isKeyword(in.get(i+2)) && KeyWord.isOp(in.get(i+1)) ){
-//    						cons.add(new Conditions(in.get(i),in.get(i+1),in.get(i+2)));
-//    						System.out.println("chenggong");
-//    						i=i+3;
-//    						if(in.get(i).equals("and")){
-//    							i++;
-//    							continue;
-//    						}else if(in.get(i).equals(";")){
-//    							break;
-//    						}
-//    						
-//    					}else if(i+4<in.size()){
-//    						System.out.println(!KeyWord.isKeyword(in.get(i)));
-//    						System.out.println(!KeyWord.isKeyword(in.get(i+3) ));
-//    						System.out.println(KeyWord.isOp(in.get(i+1)));
-//    						System.out.println(!in.get(i+2).equals("\'"));
-//    						if(!KeyWord.isKeyword(in.get(i)) && !KeyWord.isKeyword(in.get(i+3)) && KeyWord.isOp(in.get(i+1))&& in.get(i+2).equals("\'") && in.get(i+4).equals("\'") ){
-//        						cons.add(new Conditions(in.get(i),in.get(i+1),in.get(i+3)));
-//        						System.out.println("chenggong");
-//        						i=i+5;
-//        						if(in.get(i).equals("and")){
-//        							i++;
-//        							continue;
-//        						}else if(in.get(i).equals(";")){
-//        							break;
-//        						}
-//        					}else{
-//        						System.out.println("Select error: one or more conditions are not complete;"); 
-//            					return "99";
-//        					}
-//    					}else{
-//    						System.out.println("Select error: one or more conditions are not complete;"); 
-//        					return "99";
-//    					}
-//    				}else{
-//    					System.out.println("Select error: one or more conditions are not complete;"); 
-//    					return "99";
-//    				}
-//    			}    		
-//    		i++;
-//    		}
-//    		if(bracket<0){
-//    			System.out.println("Select error: ( and ) are not right;"); 
-//				return "99";
-//    		}else{
-//    			System.out.println("条件被提取成功");
-//    			return "00";
-//    		}
-//    		
-//    	}
-//    	return "99";
-//    }
-//    
+    
+    //===================select================
+    public static Response select_clause(ArrayList<String> in) throws IOException{
+    	//判断表名存在  且不是关键字
+    	if(in.size()==5){
+    		if(in.get(4).equals(";")){
+    			ArrayList<Field> fields=CatalogManager.readTableFields(in.get(3));
+    			RecordManagerV3.selectRecord(in.get(3), fields, null);
+    			return new Response(true,"select success");
+    		}else{
+    			return new Response(false,"Select error: unknown error ");
+    		}
+    	}else if(in.size()<5){
+    		return new Response(true,"Select error:incomplete select sentence");
+    	}else if (in.get(4).equals("where")){
+    		int bracket=0;
+    		int i=5;
+    		ArrayList<Conditions> cons=new ArrayList<Conditions>();
+    		while(i<in.size()){
+    			if(in.get(i).equals(";")){
+    				break;
+    			}
+    			if(in.get(i).equals("and")){
+    				i++;
+    				continue;
+    			}
+    			if(in.get(i).equals("(")){
+    				bracket++;	
+    			}
+    			else if(in.get(i).equals(")")){
+    				bracket++;
+    				if(bracket<0){
+    					return new Response(false,"Select error: ( and ) are not right;"); 
+    				}
+    			}
+    			else{
+    				//System.out.println(in.size()+i);
+    				if(i+2<in.size()){
+    					if(!KeyWord.isKeyword(in.get(i)) && !KeyWord.isKeyword(in.get(i+2)) && KeyWord.isOp(in.get(i+1)) ){
+    						cons.add(new Conditions(in.get(3),in.get(i),in.get(i+1),in.get(i+2)));
+    						//System.out.println("chenggong");
+    						i=i+3;
+    						if(in.get(i).equals("and")){
+    							i++;
+    							continue;
+    						}else if(in.get(i).equals(";")){
+    							break;
+    						}
+    						
+    					}else if(i+4<in.size()){
+    						//System.out.println(!KeyWord.isKeyword(in.get(i)));
+    						//System.out.println(!KeyWord.isKeyword(in.get(i+3) ));
+    						//System.out.println(KeyWord.isOp(in.get(i+1)));
+    						//System.out.println(!in.get(i+2).equals("\'"));
+    						if(!KeyWord.isKeyword(in.get(i)) && !KeyWord.isKeyword(in.get(i+3)) && KeyWord.isOp(in.get(i+1))&& in.get(i+2).equals("\'") && in.get(i+4).equals("\'") ){
+        						cons.add(new Conditions(in.get(3),in.get(i),in.get(i+1),in.get(i+3)));
+        						System.out.println("chenggong");
+        						i=i+5;
+        						if(in.get(i).equals("and")){
+        							i++;
+        							continue;
+        						}else if(in.get(i).equals(";")){
+        							break;
+        						}
+        					}else{
+        						return new Response(false,"Select error: one or more conditions are not complete;"); 
+            					
+        					}
+    					}else{
+    						return new Response(false,"Select error: one or more conditions are not complete;"); 
+ 
+    					}
+    				}else{
+    					return new Response(false,"Select error: one or more conditions are not complete;"); 
+    					
+    				}
+    			}    		
+    		i++;
+    		}
+    		if(bracket<0){
+    			return new Response(false,"Select error: ( and ) are not right;"); 
+
+    		}else{
+    			//System.out.println("条件被提取成功");
+    			ArrayList<Field> field=CatalogManager.readTableFields(in.get(3));
+    			int ii;
+    			for(Conditions c: cons){
+    				boolean flag=false;
+    				for(Field f:field){
+    					if(c.field.getName().equals(f.getName())){
+    						flag=true;
+    						break;
+    					}
+    				}
+    				if(flag==false){
+    					return new Response(false,"no such field name");
+    				}
+    			}
+    			return RecordManagerV3.selectRecord(in.get(3), field, cons);
+    		}
+    		
+    	}
+    	return new Response(false,"Select error :syntax error");
+    }
+    
 
     
 	public static void main(String[] args) throws IOException {
@@ -397,15 +407,9 @@ public class Interpreter {
 			execfile(words);
 			return new Response(true,"execfile done");
 		}
-//		else if(words.get(0).equals("select")&& words.get(1).equals("*")&& words.get(2).equals("from")){
-//			return select_clause(words);
-//		}
-//		else if(words.get(0).equals("select")&& words.get(1).equals("*")){
-//			return new Response(false, "Delete error: '*' was missing");
-//		}
-//		else if(words.get(0).equals("select")&& words.get(2).equals("from")){
-//			return new Response(false, "Delete error: '*' was missing");
-//		}
+		else if(words.get(0).equals("select")&& words.get(1).equals("*")&& words.get(2).equals("from")){
+			return select_clause(words);
+		}
 		else {
 			return new Response(false, "Syntax error!");
 		}

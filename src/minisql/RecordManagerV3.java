@@ -188,14 +188,14 @@ public class RecordManagerV3{
 		
 		if(cnt==0)
 		{
-			System.out.println("no record was deleted");
+			//System.out.println("no record was deleted");
 		}
 		else
 		{
-			System.out.println(cnt+"record was deleted");
+			//System.out.println(cnt+"record was deleted");
 		}
 		
-		return new Response(true,"delete "+cnt);
+		return new Response(true,cnt +"record(s) were deleted");
 		
 	}
 	public static void main(String[] args) throws IOException{
