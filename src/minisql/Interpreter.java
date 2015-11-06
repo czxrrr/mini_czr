@@ -132,7 +132,7 @@ public class Interpreter {
     				}
     				else{
     					if(in.get(i).equals(")") && in.get(i+1).equals(";")){
-    						System.out.println("insert "+in.get(2)+" "+values);
+    						//System.out.println("insert "+in.get(2)+" "+values);
     						ArrayList<Field> field=CatalogManager.readTableFields(in.get(2));
     						Record rec=new Record(values);
     						return RecordManagerV2.insertRecord(in.get(2),field,rec);
@@ -191,8 +191,8 @@ public class Interpreter {
     				//System.out.println(in.size()+i);
     				if(i+2<in.size()){
     					if(!KeyWord.isKeyword(in.get(i)) && !KeyWord.isKeyword(in.get(i+2)) && KeyWord.isOp(in.get(i+1)) ){
-    						cons.add(new Conditions(in.get(i),in.get(i+1),in.get(i+2)));
-    						System.out.println("chenggong");
+    						cons.add(new Conditions(in.get(2),in.get(i),in.get(i+1),in.get(i+2)));
+    						//System.out.println("chenggong");
     						i=i+3;
     						if(in.get(i).equals("and")){
     							i++;
@@ -207,7 +207,7 @@ public class Interpreter {
     						System.out.println(KeyWord.isOp(in.get(i+1)));
     						System.out.println(!in.get(i+2).equals("\'"));
     						if(!KeyWord.isKeyword(in.get(i)) && !KeyWord.isKeyword(in.get(i+3)) && KeyWord.isOp(in.get(i+1))&& in.get(i+2).equals("\'") && in.get(i+4).equals("\'") ){
-        						cons.add(new Conditions(in.get(i),in.get(i+1),in.get(i+3)));
+        						cons.add(new Conditions(in.get(2),in.get(i),in.get(i+1),in.get(i+3)));
         						System.out.println("chenggong");
         						i=i+5;
         						if(in.get(i).equals("and")){
@@ -232,7 +232,22 @@ public class Interpreter {
     		if(bracket<0){
     			return new Response(false,"Delete error: ( and ) are not right;"); 
     		}else{
-    			return new Response(false,"条件被提取成功");
+    			ArrayList<Field> field=CatalogManager.readTableFields(in.get(2));
+    			int ii;
+    			for(Conditions c: cons){
+    				boolean flag=false;
+    				for(Field f:field){
+    					if(c.field.getName().equals(f.getName())){
+    						flag=true;
+    						break;
+    					}
+    				}
+    				if(flag==false){
+    					return new Response(false,"no such field name");
+    				}
+    			}
+    			
+    			return RecordManagerV3.deleteRecord(in.get(2),field,cons);
     		}
     		
     	}
@@ -373,11 +388,11 @@ public class Interpreter {
 		else if(words.get(0).equals("insert")){
 			return insert_clause(words);
 		}
-//		else if(words.get(0).equals("delete") && words.get(1).equals("from")){
-//			return delete_clause(words);
-//		}else if(words.get(0).equals("delete")) {
-//			return new Response(false,"Delete error: 'from' was missing");
-//		}
+		else if(words.get(0).equals("delete") && words.get(1).equals("from")){
+			return delete_clause(words);
+		}else if(words.get(0).equals("delete")) {
+			return new Response(false,"Delete error: 'from' was missing");
+		}
 		else if(words.get(0).equals("execfile")){
 			execfile(words);
 			return new Response(true,"execfile done");

@@ -14,7 +14,10 @@ public class RecordManagerV3{
 	
 	
 	public static void printRecord(ArrayList<Field> fields, ArrayList<Record> records)throws IOException {
-		
+		if(fields==null){
+			System.out.println("no records");
+			return;
+		}
 		for(Field i:fields)
 		{
 			System.out.print(i.getName());
@@ -36,7 +39,17 @@ public class RecordManagerV3{
 	
 	public static boolean compareRecord(ArrayList<Field> fields,Record record,Conditions con)throws IOException {
 		
-		int row=fields.indexOf(con.field.getName());
+		int row=-1;
+		int ii;
+		for(ii=0;ii<fields.size();ii++){
+			if(fields.get(ii).getName().equals(con.field.getName())){
+				row=ii;
+				break;
+			}
+		}
+		if (row ==-1){
+			return false;
+		}
 		String s1,s2,op;
 		int comp=0;
 		s1=record.attr.get(row);
@@ -92,6 +105,9 @@ public class RecordManagerV3{
 	public static Response selectRecord(String tableName, ArrayList<Field> fields, ArrayList<Conditions> cons) throws IOException {
 		
 		ArrayList<Record> records=RecordManagerV2.getRecord(tableName,fields);
+		if (records==null){
+			return new Response(false,"file was not found");
+		}
 		ArrayList<Record> result=new ArrayList<Record>();
 		if(records!=null){
 		for(Record i:records)
@@ -113,11 +129,11 @@ public class RecordManagerV3{
 		}}
 		if(result.size()==0)
 		{
-			System.out.println("√ª”–∑˚∫œÃıº˛µƒº«¬º");
+			System.out.println("no records was found ");
 		}
 		else 
 		{
-			System.out.println(result.size()+" records was deleted");
+			System.out.println(result.size()+" records was selected");
 			printRecord(fields,result);
 		}
 		
@@ -126,13 +142,17 @@ public class RecordManagerV3{
 	}
 	
 	
+	@SuppressWarnings("resource")
 	public static Response deleteRecord(String tableName, ArrayList<Field> fields, ArrayList<Conditions> cons) throws IOException {
 		
 		ArrayList<Record> records=RecordManagerV2.getRecord(tableName,fields);
-		
+		if (records==null){
+			return new Response(false,"error:file was not found");
+		}
 		File tempFile = new File(tableName+"Temp");
 		BufferedWriter bw = new BufferedWriter(new FileWriter(tempFile));
 		int cnt=0;
+
 		for(Record i:records)
 		{
 			boolean flag=true;
@@ -168,7 +188,7 @@ public class RecordManagerV3{
 		
 		if(cnt==0)
 		{
-			System.out.println("√ª”–∑˚∫œÃıº˛µƒº«¬º");
+			System.out.println("no record was deleted");
 		}
 		else
 		{
@@ -179,7 +199,7 @@ public class RecordManagerV3{
 		
 	}
 	public static void main(String[] args) throws IOException{
-		selectRecord("ab",CatalogManager.readTableFields("ab"),null);
+		selectRecord("ab",CatalogManager.readTableFields("bb"),null);
 		
 	}
 

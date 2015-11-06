@@ -101,4 +101,11 @@ public class Field {
 	public Field(){
 
 	}
+	public Field(Field f) {
+		// TODO Auto-generated constructor stub
+		this.len=f.len;
+		this.name=f.name;
+		this.unique=f.unique;
+		this.type=f.type;
+	}
 }

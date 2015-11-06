@@ -16,7 +16,7 @@ public class RecordManagerV2{
 	public static ArrayList<Record> getRecord(String tableName, ArrayList<Field> fields)throws IOException {
 		File recordFile = new File(tableName);
 		if (!recordFile.exists()){
-			System.out.println("error:the file was not found"); 
+			//System.out.println("error:the file was not found"); 
 			return null;
 		}
 		BufferedReader br = new BufferedReader(new FileReader(recordFile));
@@ -72,11 +72,7 @@ public class RecordManagerV2{
 		return new Response(true,""+result.size());
 		
 	}
-	public Response deleteRecord(String tableName, ArrayList<Field> fields, ArrayList<Conditions> cons) throws IOException {
-		
-		return null;
-		
-	}
+
 	public static Response insertRecord(String tableName, ArrayList<Field> fields, Record rec) throws IOException {
 		ArrayList<Record> records=getRecord(tableName,fields);
 		boolean flag=false;
@@ -93,7 +89,7 @@ public class RecordManagerV2{
 		}
 		if(flag==true)
 		{
-			System.out.println("insert fail, the record has exist");
+			//System.out.println("insert fail, the record has exist");
 			return new Response(false,"insert  fail, the record has exist"); 
 		}
 		else
@@ -110,7 +106,7 @@ public class RecordManagerV2{
 			bw.write(newRecord);
 			bw.close();
 			//insertIntoFile();
-			System.out.println("insert success");
+			//System.out.println("insert success");
 			return new Response(true,"insert success");
 		}
 	}
