@@ -9,3 +9,9 @@ asss4,age/int/0/0,-1
 asss3,age/int/0/0,-1
 asss6,age/int/0/0,-1
 bb,age/int/0/0,age2/int/0/0,-1
+aa,age/int/0/0,age2/int/0/0,-1
+test,id/int/0/1,name/char/5/0,age/int/0/0,-1
+test2,id/int/0/0,name/char/5/0,age/int/0/0,-1
+pp,id/int/0/1,name/char/5/0,age/int/0/0,0
+abc,id/int/0/1,-1
+abcd,id/int/0/1,age/int/0/0,-1

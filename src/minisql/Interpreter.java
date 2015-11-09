@@ -77,6 +77,7 @@ public class Interpreter {
     			for(j=0;j<fields.size();j++){
     				if(fields.get(j).getName().equals(primary)){
     					primary_position=j;
+    					fields.get(j).setUnique(true);
     				}
     			}
     		}

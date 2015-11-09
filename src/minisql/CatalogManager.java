@@ -82,6 +82,8 @@ public class CatalogManager {
         bufferedWriter.close();
 
         tempFile.renameTo(catalogFile);
+        File file = new File(tableName);
+        file.delete();
 
         return new Response(true,"success");
     }
